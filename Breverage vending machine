@@ -1,0 +1,109 @@
+module BVM(output BVMout, output[5:1]  Return  ,input[5:1] Amount, input[2:0] in, input BVMclk);
+  reg[5:1]  Return;
+  reg BVMout = 1'b0;
+  reg[5:1] counter = 4'b0000;
+  
+  always@(posedge BVMclk)
+    begin
+      if(BVMout==1'b1)
+        begin
+          counter=counter+4'b0001;
+          if(counter==4'b1010)
+            begin
+              BVMout=1'b0;
+              counter=4'b0000;
+              $display("Now you can give next input");
+            end
+        end
+       if(Amount>=5'b01111)
+        begin
+          case(in)
+            3'b001:
+              begin
+                $display("Amount paid =%0d Rs ,input=%0d",Amount,in);
+                $display("time=%0t Dispensing Water",$time);
+                BVMout=1'b1;
+              end
+            3'b010:
+              begin
+                $display("Amount paid =%0d Rs , input=%0d",Amount,in);
+                $display("time=%0t Dispensing Cold coffee",$time);
+               
+                BVMout=1'b1;
+              end
+            3'b011:
+              begin
+                $display("Amount paid =%0d Rs , input=%0d",Amount,in);
+                $display("time=%0t Dispensing Coke",$time);
+                BVMout=1'b1;
+              end
+            3'b100:
+              begin
+                $display("Amount paid =%0d Rs , input=%0d",Amount,in);
+                $display("time=%0t Dispensing sprite",$time);
+                counter=4'b0001;
+              end
+            4'b101:
+              begin
+                $display("Amount paid =%0d Rs , input=%0d",Amount,in);
+                $display("time=%0t Dispensing pepsi",$time);
+                BVMout=1'b1;
+              end       
+             endcase
+        end
+        
+      if ( Amount<4'b1111) begin
+            Return = Amount;
+        $display ("time =%0t , Amount is insufficient ,Amount paid=%0d , returning amount  =%0d rs.",$time,Amount
+,Return);
+        BVMout=1'b0;
+        counter=4'b0001;
+      end
+      if ( Amount>4'b1111) begin 
+            Return =Amount- 4'b1111;
+        $display ("Returning Balance rs %0d .",Return);
+        BVMout=1'b1;
+        counter=4'b0000;
+      end
+    end
+endmodule
+
+module clock(output cc);
+  reg cc = 0;
+  always
+    begin
+      #5
+      cc=~cc;
+    end
+endmodule
+
+// Code your testbench here
+// or browse Examples
+module testbench();
+  
+  reg[5:1]Amount;
+  reg[2:0] in;
+  wire[5:1]  Return;
+  wire BVMout;
+  wire clk;
+  clock c(clk);
+  
+  BVM machine(BVMout,Return, Amount, in, clk);
+  
+  initial
+    begin
+      $dumpfile("dump.vcd");
+      $dumpvars(0);
+      Amount=5'b01111;
+      in =3'b001;
+      #15
+      Amount=5'b01010;
+      in=3'b010;
+      #10
+      Amount=5'b10100;
+      in=3'b011;
+      #5
+     
+      $finish;
+    end
+endmodule

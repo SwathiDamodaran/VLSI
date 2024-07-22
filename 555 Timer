@@ -1,0 +1,63 @@
+module timer_555(
+    input wire trig,
+    input wire rst,
+    output reg out
+);
+    reg [7:0] count;
+
+    always @(posedge trig or posedge rst) begin
+      if (rst) begin
+            count <=0;
+            out <= 0;
+        end 
+      else 
+        if (trig) begin
+          out <=1;
+          end else begin
+          if (count == 8'hFF) begin
+                count <= 0;
+                out <= ~out;
+            end 
+          else begin
+                count <= count + 1;
+            end
+        end
+    end
+endmodule
+
+`timescale 1ns/1ps  // Set timescale for simulation
+
+module timer_555_tb;
+    reg trig, rst;      // Input signals
+    wire out;           // Output signal
+
+    timer_555 timer_inst (
+        .trig(trig),
+        .rst(rst),
+        .out(out)
+    );
+
+    initial begin
+        // Initialize inputs
+        trig = 0;
+        rst = 0;
+
+        
+        #10 trig =0; rst = 1;
+        #10 trig=1; rst = 0;
+
+        #10 trig = 1; rst=1;
+
+       
+
+         $finish;
+    end
+
+    // Monitor for displaying output
+    always @(posedge out)
+        $display("Time=%0t, Output=%b", $time, out);
+
+initial begin
+  $dumpfile("dump.vcd"); $dumpvars;
+  end
+endmodule
